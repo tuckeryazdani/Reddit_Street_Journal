@@ -1,0 +1,22 @@
+2023-02-18
+403 Forbidden
+You are not allowed to create a Tweet with duplicate content.
+
+2023-05-13
+403 Forbidden
+You are not allowed to create a Tweet with duplicate content.
+
+2023-05-15
+400 Bad Request
+Your Tweet text is too long. For more information on how Twitter determines text length see https://github.com/twitter/twitter-text.
+
+2023-05-15
+400 Bad Request
+Your Tweet text is too long. For more information on how Twitter determines text length see https://github.com/twitter/twitter-text.
+
+2023-05-19
+'Twitter_API' object has no attribute 'client'
+
+2023-06-04
+unsupported operand type(s) for +: 'int' and 'str'
+
