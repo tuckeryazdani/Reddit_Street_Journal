@@ -23,5 +23,3 @@ Installation
 4. docker run --env-file .env reddit-street-journal
 The Reddit Street Journal
 
-<img width="1536" height="1024" alt="TwitterBackground Picture" src="https://github.com/user-attachments/assets/60b22f9d-af19-432f-857c-fbb84edd280e" />
-<img width="1024" height="1024" alt="Twitter Profile Picture" src="https://github.com/user-attachments/assets/4165e5ee-1ffe-4d7e-a9f3-a1621ae4b6a8" />
