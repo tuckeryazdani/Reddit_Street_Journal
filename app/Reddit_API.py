@@ -2,20 +2,13 @@ import os
 import logging
 import praw
 from collections import Counter
-from dotenv import load_dotenv
-
+import datetime
 # Initialize logging to help debug connection issues
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Reddit_API:
     def __init__(self, company_name_to_ticker: dict, post_scan_limit: int):
-        # Ensure environment variables are loaded
-        load_dotenv()
-        
-        # Validate critical credentials exist
-        self._validate_env_vars()
-
         self.reddit = praw.Reddit(
             client_id=os.getenv('REDDIT_CLIENT_ID'),
             client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
@@ -33,35 +26,36 @@ class Reddit_API:
         if missing:
             raise EnvironmentError(f"Missing required environment variables: {', '.join(missing)}")
 
-    def get_count_of_stock_mentions(self, desired_subreddit: str) -> dict:
+    def get_detailed_stock_mentions(self, desired_subreddit: str):
         """
-        Scrapes Reddit for stock mentions using an optimized Counter and word matching.
+        Returns a list of dictionaries containing every mention, the comment text, 
+        and metadata for auditing.
         """
-        stocks_mentioned = Counter()
+        all_mentions = []
         
         try:
             subreddit = self.reddit.subreddit(desired_subreddit)
-            # Use replace_more(limit=0) to skip 'load more comments' and speed up scraping
             for submission in subreddit.hot(limit=self.post_scan_limit):
                 submission.comments.replace_more(limit=0) 
                 
                 for comment in submission.comments.list():
                     body = comment.body.lower()
                     
-                    # Optimization: Check if any stock keyword exists in the string 
-                    # before iterating through the full stock list
                     for stock in self.stocks:
                         if stock in body:
-                            stocks_mentioned[stock] += 1
-                            
+                            # Save the full record
+                            all_mentions.append({
+                                'stock': stock,
+                                'comment_body': comment.body,
+                                'author': str(comment.author),
+                                'created_at': datetime.datetime.fromtimestamp(comment.created_utc),
+                                'post_title': submission.title
+                            })
         except Exception as e:
             logger.error(f"Error scraping Reddit: {e}")
-            return {}
+            return []
 
-        # Handle Meta/Facebook rebranding logic using dictionary methods
-        self._merge_fb_to_meta(stocks_mentioned)
-
-        return dict(stocks_mentioned)
+        return all_mentions
 
     def _merge_fb_to_meta(self, counts: Counter):
         """Helper to consolidate Facebook mentions into Meta."""
