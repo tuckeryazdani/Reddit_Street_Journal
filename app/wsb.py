@@ -6,21 +6,60 @@ import stock_data
 import pandas as pd
 import datetime
 import pandas as pd
-
+import sqlalchemy
+from google.cloud.sql.connector import Connector
+import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# Function to create the connection
+def getconn():
+    connector = Connector()
+    conn = connector.connect(
+        os.getenv('CLOUD_HOST'), # Found in Cloud SQL Overview
+        "pymysql", # Use "pymysql" if using MySQL
+        user= os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        db=os.getenv('DB_NAME')
+    )
+    return conn
+
 def main():
-    
-    # Begin script.
     DESIRED_SUBREDDIT = r"wallstreetbets"
-    # Get dictionary that converts company name to its ticker and also get top 500 companeis.
     COMPANY_NAME_TO_TICKER = stock_data.get_company_name_to_ticker_dict()
     
-    # Initialize Reddit_API object to create a connection to the Reddit API.
     reddit_client = Reddit_API(COMPANY_NAME_TO_TICKER, 100)
-    # Call the get_count_of_stock_mentions function to return a dictionary of stocks found and the number of times they were mentioned.
-    stock_names_found = reddit_client.get_count_of_stock_mentions(DESIRED_SUBREDDIT)
+    
+    # Get the raw records instead of just counts
+    records = reddit_client.get_detailed_stock_mentions(DESIRED_SUBREDDIT)
+    
+    # Create the DataFrame
+    df = pd.DataFrame(records)
+    
+    if df.empty:
+        print("No stocks found.")
+        return
+
+    # Clean the data (Meta/Facebook logic)
+    df['stock'] = df['stock'].replace('facebook', 'meta')
+
+    # Create SQLAlchemy Engine
+    engine = sqlalchemy.create_engine(
+        "mysql+pymysql://",
+        creator=getconn,
+    )
+
+    # Upload to Cloud SQL
+    df.to_sql('reddit_mentions', engine, if_exists='append', index=False)
+    print("Data pushed to Cloud SQL!")
+    
+    # Save to CSV for manual checking if needed
+    # df.to_csv('reddit_mentions_audit.csv', index=False)
+    # print("Full audit log saved to reddit_mentions_audit.csv")
+
+    # 5. Convert back to a dictionary for your existing logic
+    # This keeps your 'stock_price_change' and 'tweet' code working
+    stock_names_found = df['stock'].value_counts().to_dict()
     print(f'Stocks Found: {stock_names_found}')
 
     # Use the Yahoo Fiance API to determine how much these stocks have changed in the past 7 days. 

@@ -1,9 +1,11 @@
 # Secrets
 .env
+powerful-balm-482518-i5-66d1f96462b4.json
 
 # Python cache
 __pycache__/
 *.pyc
 
-# Local cache files
+# cache
+reddit_mentions_audit.csv
 ticker_cache.json
