@@ -1,51 +1,56 @@
+This version cleans up the formatting, adds a clear structure, and adopts a "developer-to-developer" tone. It sounds like a project you built, owned, and are proud of, rather than a generated technical manual.
+
 📈 Reddit Street Journal
-Autonomous Sentiment Analysis & Market Forecasting Pipeline
+Turning Subreddit Hype into Actionable Market Insights
+I built the Reddit Street Journal to bridge the gap between social media "noise" and actual market indicators. It’s a fully autonomous, containerized data pipeline that scrapes retail investor sentiment, filters it through a custom seasonality heuristic, and uses AI to share those insights with the world.
 
-Reddit Street Journal is a fully containerized data pipeline that bridges social media "hype" with fundamental market indicators. It autonomously scrapes retail investor sentiment from Reddit, cross-references it with S&P 500 equities, and applies a seasonality heuristic to forecast stock performance. The results are published via an interactive AI persona on X (Twitter) and synced to a live web dashboard.
+🧠 How it Works
+The system is designed to be completely hands-off. Once a week, it executes a three-stage pipeline:
 
-🛠️ System Architecture
 1. Data Ingestion & Mapping
-Dynamic Ticker Resolution: Scrapes Wikipedia via BeautifulSoup to map S&P 500 company names to their official tickers, ensuring context-aware sentiment analysis.
+Dynamic Ticker Resolution: I use BeautifulSoup to scrape Wikipedia for the current S&P 500 list. This maps company names to tickers so the bot actually understands that "Apple" and "AAPL" are the same thing.
 
-Social Scraping: Utilizes the Reddit API (PRAW) to monitor specific financial subreddits for high-frequency mentions and emerging trends.
+Reddit Scraping: Using the PRAW API, the script scans top financial subreddits for high-frequency mentions and emerging trends.
 
-Intelligent Caching: Implements a local JSON-based caching system to minimize external requests and respect API rate limits.
+Smart Caching: To avoid getting rate-limited (and to keep things fast), I implemented a local JSON caching system that manages data expiration.
 
-2. Analysis & Heuristics
-Seasonality Engine: Adjusts sentiment scores based on historical sector performance (e.g., boosting airline/travel weights during summer months).
+2. Analysis & AI Logic
+Seasonality Engine: This isn't just a mention counter. The bot adjusts sentiment scores based on the time of year—for example, giving extra weight to travel stocks in the summer or retail in Q4.
 
-AI Commentary: Passes raw sentiment data to OpenAI’s GPT-4o to generate snarky, human-like financial insights tailored to the subreddit's unique culture.
+GPT-4o Commentary: Raw data is fed into OpenAI's GPT-4o to generate snarky, human-like financial commentary that fits the unique culture of retail investing forums.
 
 3. Automated Distribution
-Social Engagement: Autonomously posts summaries to X (Twitter) and utilizes the Twitter API to engage with followers in real-time.
+Social Engagement: The bot autonomously tweets summaries via the X (Twitter) API and can even reply to users who mention the account.
 
-Web Sync: Automatically publishes the latest findings to a personal portfolio site via Git automation.
+Web Dashboard Sync: Every successful run triggers a Git automation script that pushes the latest data directly to my personal portfolio site.
 
-🚀 Deployment
-The application is built for modern cloud environments and is fully Dockerized.
+🚀 The Tech Stack
+I chose these tools to keep the project "Serverless" and cost-effective:
 
-Infrastructure
-Google Cloud Platform: Deployed as a Cloud Run Job for serverless, cost-efficient execution.
+Cloud: Deployed as a Cloud Run Job on Google Cloud (GCP).
 
-Cloud Scheduler: Configured via CRON to run every Monday at 9:00 AM.
+Automation: Scheduled via Cloud Scheduler (CRON) to run every Monday at 9:00 AM.
 
-Secret Management: Securely handles API keys using .env files and Google Secret Manager.
+Containerization: Fully Dockerized to ensure it runs the same in the cloud as it does on my laptop.
 
-Local Setup
+Security: API keys and secrets are managed via .env files and Google Secret Manager.
+
+🛠️ Local Setup
+If you want to run this locally, you'll need to grab your own API keys for Reddit, Twitter, and OpenAI.
+
 Bash
 
-# Clone the repository
-git clone https://github.com/yourusername/Reddit_Street_Journal.git
+# Clone the repo
+git clone https://github.com/tuckeryazdani/The-Reddit-Street-Journal.git
+cd The-Reddit-Street-Journal
 
-# Setup Environment Variables
-cp .env.example .env
+# Setup your environment variables
+touch .env # Add your keys here
+
+# Build and run with Docker
+docker build -t reddit-journal .
+docker run --env-file .env reddit-journal
 
 # Build and Run with Docker
 docker build -t reddit-journal .
 docker run --env-file .env reddit-journal
-📊 Technical Challenges Overcome
-Port 8080 Conflicts: Migrated from Cloud Run Services to Cloud Run Jobs to better handle non-web scraping workloads.
-
-Memory Optimization: Optimized container resources (2GB RAM) to handle large Python libraries like pandas and yfinance.
-
-Rate Limiting: Developed a custom caching layer for Wikipedia and Reddit data to ensure 100% uptime within free-tier API limits.
