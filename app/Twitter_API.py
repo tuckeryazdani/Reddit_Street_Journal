@@ -30,7 +30,6 @@ class Twitter_API:
                 f.write(f'{datetime.date.today()} - Post Error: {e}\n')
             print(f"Failed to post tweet: {e}")
 
-    # INDENTED THIS BLOCK TO BE INSIDE THE CLASS
     def respond_to_mentions(self):
         print("Checking for mentions...")
         
@@ -72,7 +71,8 @@ class Twitter_API:
             
         except Exception as e:
             print(f"Unexpected error in mentions: {e}")
-            
+            return
+        
 # Manually trigger mention response for testing
 if __name__ == '__main__':
     bot = Twitter_API()
