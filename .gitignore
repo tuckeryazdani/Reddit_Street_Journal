@@ -1,2 +1,9 @@
-# Google App Engine generated folder
-appengine-generated/
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local cache files
+ticker_cache.json
