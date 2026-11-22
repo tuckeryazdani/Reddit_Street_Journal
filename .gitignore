@@ -1,11 +1,25 @@
-# Secrets
+# Secrets. Never commit these; see .env.example for the variables to set.
 .env
-powerful-balm-482518-i5-66d1f96462b4.json
+.env.*
+!.env.example
+# Service-account keys and other credentials downloaded into the project root
+/*.json
 
-# Python cache
+# Local state and scraped data
+state/
+logs/
+*.csv
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
 
-# cache
-reddit_mentions_audit.csv
-ticker_cache.json
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
