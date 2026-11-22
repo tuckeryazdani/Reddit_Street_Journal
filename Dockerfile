@@ -1,21 +1,22 @@
-# Use an existing docker image as a base
-FROM python:3.11
+FROM python:3.11-slim
 
-# Set the working directory early to organize files
-WORKDIR /app 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-COPY powerful-balm-482518-i5-66d1f96462b4.json ./
-# Copy requirements first to leverage Docker cache
-COPY requirements.txt ./
-RUN pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt 
+WORKDIR /app
 
-# Copy the rest of the application code
-COPY ./app . 
+# git is only needed for the optional website-publishing step.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Ensure python can find your modules
-ENV PYTHONPATH=/app
+# Dependencies first, so this layer is rebuilt only when they change.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-ENV GOOGLE_APPLICATION_CREDENTIALS="/app/powerful-balm-482518-i5-66d1f96462b4.json"
+COPY reddit_street_journal ./reddit_street_journal
 
-# Run main.py when the container launches
-CMD ["python", "main.py"]
+# No credentials are baked into the image. Pass them at run time:
+#   docker run --env-file .env -v "$PWD/state:/app/state" reddit-street-journal
+# See the README for mounting the Google service-account key.
+ENTRYPOINT ["python", "-m", "reddit_street_journal"]
